@@ -5,10 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="favicon.ico">
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
@@ -42,7 +38,7 @@
 
 <!-- LOGIN -->
 <div id="loginSection" class="login-box">
-  <button onclick="googleLogin()">Sign in with Google</button>
+  <button id="google-login-btn">Sign in with Google</button>
 </div>
 
 <!-- SHOP -->
@@ -51,9 +47,9 @@
     <p id="userInfo"></p>
 
     <!-- ADMIN BUTTON -->
-    <button onclick="addProduct()">+ Add Product</button>
+    <button id="add-product-btn">+ Add Product</button>
 
-    <button onclick="logout()">Logout</button>
+    <button id="logout-btn">Logout</button>
   </div>
 
   <div class="shop-grid" id="productContainer"></div>
@@ -61,7 +57,44 @@
 
 </section>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeUrl(value){
+  if(!value) return "";
+  try{
+    const parsed = new URL(value, window.location.origin);
+    if(parsed.protocol === "http:" || parsed.protocol === "https:"){
+      return parsed.href;
+    }
+  }catch(_e){}
+  return "";
+}
 
 /* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
@@ -70,77 +103,98 @@ const firebaseConfig = {
   projectId: "mecknownshop"
 };
 
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 /* 🔐 ADMIN EMAIL */
-const ADMIN_EMAIL = "shazamotp@gmail.com"; // ← change this
+const ADMIN_EMAIL = "shazamotp@gmail.com";
+const addProductBtn = document.getElementById("add-product-btn");
+const googleLoginBtn = document.getElementById("google-login-btn");
+const logoutBtn = document.getElementById("logout-btn");
+const loginSection = document.getElementById("loginSection");
+const shopSection = document.getElementById("shopSection");
+const userInfo = document.getElementById("userInfo");
+const container = document.getElementById("productContainer");
+const productsRef = collection(db, "products");
 
 /* LOGIN */
 function googleLogin(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider);
 }
 
-/* AUTH STATE */
-auth.onAuthStateChanged(user => {
+/* AUTH STATE + ADMIN BUTTON VISIBILITY */
+onAuthStateChanged(auth, (user) => {
   if(user){
-    document.getElementById("loginSection").style.display="none";
-    document.getElementById("shopSection").style.display="block";
-    document.getElementById("userInfo").innerText="👤 "+user.email;
-    loadProducts();
+    loginSection.style.display = "none";
+    shopSection.style.display = "block";
+    userInfo.innerText = "👤 " + user.email;
+
+    if(user.email === ADMIN_EMAIL){
+      addProductBtn.style.display = "block";
+    }else{
+      addProductBtn.style.display = "none";
+    }
+  }else{
+    loginSection.style.display = "block";
+    shopSection.style.display = "none";
+    addProductBtn.style.display = "none";
   }
 });
 
 /* LOGOUT */
 function logout(){
-  auth.signOut();
-  location.reload();
+  signOut(auth);
 }
 
 /* 🔥 LOAD PRODUCTS (FIRESTORE LIVE) */
 function loadProducts(){
-  const container = document.getElementById("productContainer");
+  const productsQuery = query(productsRef, orderBy("createdAt", "desc"));
 
-  db.collection("products")
-    .orderBy("createdAt","desc")
-    .onSnapshot(snapshot=>{
-      container.innerHTML="";
+  onSnapshot(productsQuery, (snapshot) => {
+    container.innerHTML = "";
 
-      snapshot.forEach(doc=>{
-        const product = doc.data();
+    if(snapshot.empty){
+      container.innerHTML = "<p>No products available yet.</p>";
+      return;
+    }
 
-        container.innerHTML += `
-          <div class="product-card">
-            <span class="badge">NEW</span>
+    snapshot.forEach((doc) => {
+      const product = doc.data() || {};
+      const name = escapeHtml(product.name);
+      const description = escapeHtml(product.description);
+      const price = Number(product.price);
+      const safePrice = Number.isFinite(price) ? price : 0;
+      const image = safeUrl(product.image);
 
-            <img src="${product.image}">
+      container.innerHTML += `
+        <div class="product-card">
+          <span class="badge">NEW</span>
 
-            <h3>${product.name}</h3>
+          <img src="${image}" alt="${name}">
 
-            <div class="rating">⭐⭐⭐⭐☆</div>
+          <h3>${name}</h3>
 
-            <p>${product.description}</p>
+          <div class="rating">⭐⭐⭐⭐☆</div>
 
-            <div class="price-row">
-              <span class="price">₹${product.price}</span>
-              <button onclick="placeOrder('${product.name}','${product.price}')">
-                Buy
-              </button>
-            </div>
+          <p>${description}</p>
+
+          <div class="price-row">
+            <span class="price">₹${safePrice}</span>
+            <button onclick='placeOrder(${JSON.stringify(name)}, ${JSON.stringify(String(safePrice))})'>
+              Buy
+            </button>
           </div>
-        `;
-      });
+        </div>
+      `;
     });
+  });
 }
 
 /* ➕ ADD PRODUCT (ADMIN ONLY) */
-function addProduct(){
-  const user = auth.currentUser;
-
-  if(!user || user.email !== ADMIN_EMAIL){
+async function addProduct(){
+  if(!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL){
     alert("Access denied");
     return;
   }
@@ -152,43 +206,51 @@ function addProduct(){
 
   if(!name || !price) return;
 
-  db.collection("products").add({
+  await addDoc(productsRef, {
     name,
     price,
     image,
     description,
-    createdAt: new Date()
-  })
-  .then(()=>alert("✅ Product Added!"));
+    createdAt: serverTimestamp()
+  });
+
+  alert("✅ Product Added!");
 }
 
 /* 🛒 ORDER */
 function placeOrder(name, price){
-  const user=auth.currentUser;
+  const user = auth.currentUser;
+  if(!user){
+    alert("Please sign in to place an order.");
+    return;
+  }
 
-  const formData=new FormData();
+  const formData = new FormData();
   formData.append("email", user.email);
   formData.append("product", name);
   formData.append("price", price);
 
-  fetch("https://script.google.com/macros/s/AKfycbwYlsLWQZkH3iGed2VA3hWk63gw8mn559sI-iLNR-uzD6UXXlLkirN2DkJMdVLzoniMPA/exec",{
-    method:"POST",
-    body:formData
+  fetch("https://script.google.com/macros/s/AKfycbwYlsLWQZkH3iGed2VA3hWk63gw8mn559sI-iLNR-uzD6UXXlLkirN2DkJMdVLzoniMPA/exec", {
+    method: "POST",
+    body: formData
   })
-  .then(()=>alert("Order placed!"))
-  .catch(()=>alert("Order failed"));
+  .then(() => alert("Order placed!"))
+  .catch(() => alert("Order failed"));
 }
 
 /* 🔍 SEARCH */
-document.getElementById("searchBar").addEventListener("input", function(){
-  const value=this.value.toLowerCase();
-  const cards=document.querySelectorAll(".product-card");
+const searchBar = document.getElementById("searchBar");
+if(searchBar){
+  searchBar.addEventListener("input", function(){
+    const value = this.value.toLowerCase();
+    const cards = document.querySelectorAll(".product-card");
 
-  cards.forEach(card=>{
-    const text=card.innerText.toLowerCase();
-    card.style.display = text.includes(value) ? "block" : "none";
+    cards.forEach((card) => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(value) ? "block" : "none";
+    });
   });
-});
+}
 
 /* MOBILE MENU */
 const toggle = document.getElementById("menu-toggle");
@@ -201,6 +263,21 @@ if(toggle && navLinks){
   });
 }
 
+if(googleLoginBtn){
+  googleLoginBtn.addEventListener("click", googleLogin);
+}
+
+if(addProductBtn){
+  addProductBtn.addEventListener("click", addProduct);
+}
+
+if(logoutBtn){
+  logoutBtn.addEventListener("click", logout);
+}
+
+window.placeOrder = placeOrder;
+
+loadProducts();
 </script>
 
 </body>
