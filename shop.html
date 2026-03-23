@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mecknown Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.ico">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <h1>Mecknown</h1>
+
+  <input type="text" id="searchBar" placeholder="Search products...">
+
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span><span></span><span></span>
+  </div>
+
+  <ul id="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html" class="active">Shop</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h2>⚡ Mecknown Store</h2>
+  <p>Smart gadgets • Robotics • Tech builds</p>
+</section>
+
+<section class="section">
+
+<!-- LOGIN -->
+<div id="loginSection" class="login-box">
+  <button onclick="googleLogin()">Sign in with Google</button>
+</div>
+
+<!-- SHOP -->
+<div id="shopSection" style="display:none;">
+  <div class="shop-header">
+    <p id="userInfo"></p>
+
+    <!-- ADMIN BUTTON -->
+    <button onclick="addProduct()">+ Add Product</button>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="shop-grid" id="productContainer"></div>
+</div>
+
+</section>
+
+<script>
+
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyDyh1Bi_29TpEG-_N3QijtxB7rdjLdHy3M",
+  authDomain: "mecknownshop.firebaseapp.com",
+  projectId: "mecknownshop"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* 🔐 ADMIN EMAIL */
+const ADMIN_EMAIL = "shazamotp@gmail.com"; // ← change this
+
+/* LOGIN */
+function googleLogin(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+/* AUTH STATE */
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById("loginSection").style.display="none";
+    document.getElementById("shopSection").style.display="block";
+    document.getElementById("userInfo").innerText="👤 "+user.email;
+    loadProducts();
+  }
+});
+
+/* LOGOUT */
+function logout(){
+  auth.signOut();
+  location.reload();
+}
+
+/* 🔥 LOAD PRODUCTS (FIRESTORE LIVE) */
+function loadProducts(){
+  const container = document.getElementById("productContainer");
+
+  db.collection("products")
+    .orderBy("createdAt","desc")
+    .onSnapshot(snapshot=>{
+      container.innerHTML="";
+
+      snapshot.forEach(doc=>{
+        const product = doc.data();
+
+        container.innerHTML += `
+          <div class="product-card">
+            <span class="badge">NEW</span>
+
+            <img src="${product.image}">
+
+            <h3>${product.name}</h3>
+
+            <div class="rating">⭐⭐⭐⭐☆</div>
+
+            <p>${product.description}</p>
+
+            <div class="price-row">
+              <span class="price">₹${product.price}</span>
+              <button onclick="placeOrder('${product.name}','${product.price}')">
+                Buy
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    });
+}
+
+/* ➕ ADD PRODUCT (ADMIN ONLY) */
+function addProduct(){
+  const user = auth.currentUser;
+
+  if(!user || user.email !== ADMIN_EMAIL){
+    alert("Access denied");
+    return;
+  }
+
+  const name = prompt("Product name:");
+  const price = prompt("Price:");
+  const image = prompt("Image URL:");
+  const description = prompt("Description:");
+
+  if(!name || !price) return;
+
+  db.collection("products").add({
+    name,
+    price,
+    image,
+    description,
+    createdAt: new Date()
+  })
+  .then(()=>alert("✅ Product Added!"));
+}
+
+/* 🛒 ORDER */
+function placeOrder(name, price){
+  const user=auth.currentUser;
+
+  const formData=new FormData();
+  formData.append("email", user.email);
+  formData.append("product", name);
+  formData.append("price", price);
+
+  fetch("https://script.google.com/macros/s/AKfycbwYlsLWQZkH3iGed2VA3hWk63gw8mn559sI-iLNR-uzD6UXXlLkirN2DkJMdVLzoniMPA/exec",{
+    method:"POST",
+    body:formData
+  })
+  .then(()=>alert("Order placed!"))
+  .catch(()=>alert("Order failed"));
+}
+
+/* 🔍 SEARCH */
+document.getElementById("searchBar").addEventListener("input", function(){
+  const value=this.value.toLowerCase();
+  const cards=document.querySelectorAll(".product-card");
+
+  cards.forEach(card=>{
+    const text=card.innerText.toLowerCase();
+    card.style.display = text.includes(value) ? "block" : "none";
+  });
+});
+
+/* MOBILE MENU */
+const toggle = document.getElementById("menu-toggle");
+const navLinks = document.getElementById("nav-links");
+
+if(toggle && navLinks){
+  toggle.addEventListener("click", function(){
+    navLinks.classList.toggle("active");
+    toggle.classList.toggle("active");
+  });
+}
+
+</script>
+
+</body>
+</html>
