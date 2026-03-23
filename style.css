@@ -235,6 +235,10 @@ button:hover{
   margin-top:30px;
 }
 
+#add-product-btn{
+  display:none;
+}
+
 /* PRODUCT CARD */
 .product-card{
   background:var(--card);
