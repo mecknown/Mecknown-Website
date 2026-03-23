@@ -182,7 +182,7 @@ function loadProducts(){
 
           <div class="price-row">
             <span class="price">₹${safePrice}</span>
-            <button onclick='placeOrder(${JSON.stringify(name)}, ${JSON.stringify(String(safePrice))})'>
+            <button class="buy-btn" data-name="${name}" data-price="${safePrice}">
               Buy
             </button>
           </div>
@@ -275,7 +275,13 @@ if(logoutBtn){
   logoutBtn.addEventListener("click", logout);
 }
 
-window.placeOrder = placeOrder;
+if(container){
+  container.addEventListener("click", (event) => {
+    const buyBtn = event.target.closest(".buy-btn");
+    if(!buyBtn) return;
+    placeOrder(buyBtn.dataset.name || "", buyBtn.dataset.price || "0");
+  });
+}
 
 loadProducts();
 </script>
