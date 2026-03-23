@@ -39,6 +39,14 @@
 <!-- LOGIN -->
 <div id="loginSection" class="login-box">
   <button id="google-login-btn">Sign in with Google</button>
+  <div style="margin-top:12px;">
+    <input type="email" id="email-input" placeholder="Email" style="width:100%;margin-bottom:8px;">
+    <input type="password" id="password-input" placeholder="Password" style="width:100%;">
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
+      <button id="email-login-btn">Login with Email</button>
+      <button id="email-signup-btn">Create Account</button>
+    </div>
+  </div>
 </div>
 
 <!-- SHOP -->
@@ -55,26 +63,37 @@
   <div class="shop-grid" id="productContainer"></div>
 </div>
 
+<div id="phone-modal" style="display:none;">
+  <h3>Enter Phone Number</h3>
+  <input type="text" id="phone-input" placeholder="Phone number">
+  <button id="save-phone">Save</button>
+</div>
+
 </section>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import {
   getFirestore,
   collection,
   addDoc,
+  doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  serverTimestamp,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 function escapeHtml(value){
   return String(value ?? "")
@@ -105,17 +124,24 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getFirestore();
 
 /* 🔐 ADMIN EMAIL */
 const ADMIN_EMAIL = "shazamotp@gmail.com";
 const addProductBtn = document.getElementById("add-product-btn");
 const googleLoginBtn = document.getElementById("google-login-btn");
+const emailLoginBtn = document.getElementById("email-login-btn");
+const emailSignupBtn = document.getElementById("email-signup-btn");
 const logoutBtn = document.getElementById("logout-btn");
+const emailInput = document.getElementById("email-input");
+const passwordInput = document.getElementById("password-input");
 const loginSection = document.getElementById("loginSection");
 const shopSection = document.getElementById("shopSection");
 const userInfo = document.getElementById("userInfo");
 const container = document.getElementById("productContainer");
+const phoneModal = document.getElementById("phone-modal");
+const phoneInput = document.getElementById("phone-input");
+const savePhoneBtn = document.getElementById("save-phone");
 const productsRef = collection(db, "products");
 
 /* LOGIN */
@@ -124,12 +150,51 @@ function googleLogin(){
   signInWithPopup(auth, provider);
 }
 
+function emailLogin(){
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if(!email || !password){
+    alert("Please enter email and password.");
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .catch(() => alert("Login failed. Please check your credentials."));
+}
+
+function emailSignup(){
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if(!email || !password){
+    alert("Please enter email and password.");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .catch(() => alert("Account creation failed."));
+}
+
+async function ensureUserProfile(user){
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if(!userSnap.exists()){
+    phoneModal.style.display = "block";
+  }else{
+    phoneModal.style.display = "none";
+    console.log("User exists:", userSnap.data());
+  }
+}
+
 /* AUTH STATE + ADMIN BUTTON VISIBILITY */
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if(user){
     loginSection.style.display = "none";
     shopSection.style.display = "block";
     userInfo.innerText = "👤 " + user.email;
+    await ensureUserProfile(user);
 
     if(user.email === ADMIN_EMAIL){
       addProductBtn.style.display = "block";
@@ -140,6 +205,7 @@ onAuthStateChanged(auth, (user) => {
     loginSection.style.display = "block";
     shopSection.style.display = "none";
     addProductBtn.style.display = "none";
+    phoneModal.style.display = "none";
   }
 });
 
@@ -267,6 +333,14 @@ if(googleLoginBtn){
   googleLoginBtn.addEventListener("click", googleLogin);
 }
 
+if(emailLoginBtn){
+  emailLoginBtn.addEventListener("click", emailLogin);
+}
+
+if(emailSignupBtn){
+  emailSignupBtn.addEventListener("click", emailSignup);
+}
+
 if(addProductBtn){
   addProductBtn.addEventListener("click", addProduct);
 }
@@ -280,6 +354,34 @@ if(container){
     const buyBtn = event.target.closest(".buy-btn");
     if(!buyBtn) return;
     placeOrder(buyBtn.dataset.name || "", buyBtn.dataset.price || "0");
+  });
+}
+
+if(savePhoneBtn){
+  savePhoneBtn.addEventListener("click", async () => {
+    const phone = phoneInput.value.trim();
+    const user = auth.currentUser;
+
+    if(!phone){
+      alert("Enter phone number");
+      return;
+    }
+
+    if(!user){
+      alert("You are not logged in.");
+      return;
+    }
+
+    await setDoc(doc(db, "users", user.uid), {
+      name: user.displayName || "",
+      email: user.email || "",
+      phone,
+      createdAt: new Date()
+    });
+
+    phoneModal.style.display = "none";
+    phoneInput.value = "";
+    alert("User saved!");
   });
 }
 

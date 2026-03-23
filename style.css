@@ -239,6 +239,20 @@ button:hover{
   display:none;
 }
 
+#phone-modal{
+  max-width:360px;
+  margin:20px auto 0;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--card);
+}
+
+#phone-modal input{
+  width:100%;
+  margin:10px 0;
+}
+
 /* PRODUCT CARD */
 .product-card{
   background:var(--card);
