@@ -282,15 +282,77 @@ footer{
   flex-wrap:wrap;
 }
 
+/* ===== TEAM CARD UPGRADE ===== */
 .member{
-  background:var(--card);
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  cursor:pointer;
+
+  background:linear-gradient(145deg,#111,#0d0d0d);
   border:1px solid var(--border);
   padding:25px;
-  border-radius:var(--radius);
+  border-radius:18px;
   width:260px;
-  transition:0.4s;
+  text-align:left;
+
+  transition:0.4s ease;
+  position:relative;
+  overflow:hidden;
+
   opacity:0;
-  transform:translateY(40px);
+  transform:translateY(50px);
+}
+
+/* subtle glow border */
+.member::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:18px;
+  padding:1px;
+  background:linear-gradient(120deg, transparent, rgba(255,255,255,0.15), transparent);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  pointer-events:none;
+}
+
+/* SHOW ANIMATION */
+.member.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* TEXT */
+.member h3{
+  font-size:18px;
+  margin-bottom:6px;
+}
+
+.member span{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.member p{
+  margin-top:12px;
+  font-size:14px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+/* HOVER EFFECT */
+.member:hover{
+  transform:translateY(-10px) scale(1.03);
+  border-color:#2a2a2a;
+  box-shadow:0 20px 40px rgba(0,0,0,0.7);
+}
+
+/* glow effect on hover */
+.member:hover::before{
+  background:linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
 }
 
 .member.show{
