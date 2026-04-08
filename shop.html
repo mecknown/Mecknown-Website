@@ -281,6 +281,8 @@ window.onload=()=>{
 };
 
 /* CART */
+const cartPanel = document.getElementById("cartPanel");
+const overlay = document.getElementById("overlay");
 function toggleCart(){
   cartPanel.classList.toggle("active");
   overlay.classList.toggle("active");
@@ -366,7 +368,7 @@ if(toggle){
     toggle.classList.toggle("active");
   });
 }
-  fetch("navbar.html")
+  if(false) fetch("navbar.html")
 .then(res => res.text())
 .then(data => {
   document.getElementById("navbar").innerHTML = data;
@@ -392,6 +394,35 @@ if(toggle){
   });
 
 });
+  /* ===== SWIPE CART (ADDED SAFELY) ===== */
+
+let startX = 0;
+let endX = 0;
+
+document.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener("touchend", (e) => {
+  endX = e.changedTouches[0].clientX;
+  handleSwipe();
+});
+
+function handleSwipe(){
+  const diff = startX - endX;
+
+  // swipe left → open cart
+  if(diff > 60){
+    cartPanel.classList.add("active");
+    overlay.classList.add("active");
+  }
+
+  // swipe right → close cart
+  if(diff < -60){
+    cartPanel.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+}
   
 
 </script>
