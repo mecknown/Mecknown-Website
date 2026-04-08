@@ -366,6 +366,33 @@ if(toggle){
     toggle.classList.toggle("active");
   });
 }
+  fetch("navbar.html")
+.then(res => res.text())
+.then(data => {
+  document.getElementById("navbar").innerHTML = data;
+
+  /* MENU TOGGLE */
+  const toggle = document.getElementById("menu-toggle");
+  const navLinks = document.getElementById("nav-links");
+
+  if(toggle){
+    toggle.addEventListener("click", function(){
+      navLinks.classList.toggle("active");
+      toggle.classList.toggle("active");
+    });
+  }
+
+  /* ACTIVE LINK AUTO */
+  const current = location.pathname.split("/").pop().replace(".html","");
+
+  document.querySelectorAll("#nav-links a").forEach(link=>{
+    if(link.dataset.page === current){
+      link.classList.add("active");
+    }
+  });
+
+});
+  
 
 </script>
 
