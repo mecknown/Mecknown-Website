@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<title>About Mecknown | Robotics, AI & Innovation Company</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- SEO -->
+<meta name="description" content="Learn about Mecknown - a future-focused company building robotics, AI systems, and smart digital platforms. Meet the founders and vision behind the innovation.">
+<meta name="keywords" content="Mecknown, robotics company, AI development, embedded systems, tech startup India, robotics engineers">
+<meta name="author" content="Mecknown">
+<link rel="canonical" href="https://mecknown.in/about">
+
+<!-- Open Graph (for sharing) -->
+<meta property="og:title" content="About Mecknown">
+<meta property="og:description" content="We build robotics, AI systems, and intelligent solutions for the future.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mecknown.in/about">
+<meta property="og:image" content="https://mecknown.in/assets/logo.png">
+
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.ico">
+
+</head>
+
+<body>
+
+<!-- LOADER (MATCHED WITH INDEX) -->
+<div id="loader">
+  <img src="assets/logo.png" alt="Mecknown Loading" class="loader-logo">
+</div>
+
+<nav>
+  <h1>Mecknown</h1>
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span><span></span><span></span>
+  </div>
+  <ul id="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="ai.html">Meck AI</a></li>
+    <li><a href="course.html">Course</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="section">
+  <h2>About Mecknown</h2>
+
+  <p>
+    Mecknown is a future-focused innovation company specializing in robotics,
+    artificial intelligence, and embedded systems. We design and develop
+    intelligent solutions that bridge hardware and software to solve real-world problems.
+  </p>
+
+  <p style="margin-top:15px;">
+    Our mission is to engineer advanced technologies with precision, creativity,
+    and a strong focus on scalability — shaping the next generation of smart systems.
+  </p>
+
+  <!-- TEAM -->
+  <div class="team">
+
+    <!-- SHAZIM -->
+    <a href="shazim.html" class="member">
+      <h3>Shazim</h3>
+      <span>Co-Founder & Developer</span>
+      <p>
+        Specializes in robotics, embedded systems, and AI-driven applications.
+        Focused on building innovative hardware-software integrated solutions.
+      </p>
+    </a>
+
+    <!-- SHANIB -->
+    <a href="shanib.html" class="member">
+      <h3>Shanib</h3>
+      <span>Co-Founder & Developer</span>
+      <p>
+        Leads backend systems, architecture, and scalable platform development,
+        ensuring performance and reliability across projects.
+      </p>
+    </a>
+
+  </div>
+
+</section>
+
+<footer>
+© 2026 Mecknown. All Rights Reserved.
+</footer>
+
+<script>
+
+/* ===== LOADER (MATCH INDEX) ===== */
+window.addEventListener("load", function () {
+  const loader = document.getElementById("loader");
+
+  if (loader) {
+    document.body.style.overflow = "hidden";
+
+    setTimeout(() => {
+      loader.style.opacity = "0";
+    }, 100);
+
+    setTimeout(() => {
+      loader.style.display = "none";
+      document.body.style.overflow = "auto";
+    }, 500);
+  }
+});
+
+/* ===== MOBILE MENU ===== */
+const toggle = document.getElementById("menu-toggle");
+const navLinks = document.getElementById("nav-links");
+
+if(toggle){
+  toggle.addEventListener("click", function(){
+    navLinks.classList.toggle("active");
+    toggle.classList.toggle("active");
+  });
+}
+
+/* ===== SCROLL ANIMATION ===== */
+const members = document.querySelectorAll('.member');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, index) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('show');
+      }, index * 200);
+    }
+  });
+}, { threshold: 0.2 });
+
+members.forEach(member => observer.observe(member));
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shazim | Portfolio</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#050505;
+    color:#fff;
+}
+
+.hero{
+    text-align:center;
+    padding:110px 20px 90px;
+}
+
+/* UPDATED RESPONSIVE IMAGE */
+.profile{
+    width:220px;
+    max-width:70%;
+    margin:auto;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 0 40px rgba(255,255,255,0.08);
+    background:linear-gradient(180deg,#0a0a0a,#050505);
+    padding:6px;
+
+    opacity:0;
+    transform:translateY(-120px);
+    animation:drop 1.5s ease forwards;
+}
+
+@keyframes drop{
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.profile img{
+    width:100%;
+    height:auto;
+    display:block;
+    border-radius:14px;
+}
+
+.hero h1{
+    margin-top:22px;
+    font-size:34px;
+    font-weight:600;
+}
+
+.hero h3{
+    margin-top:10px;
+    color:#9ca3af;
+    font-weight:400;
+}
+
+.hero p{
+    margin-top:10px;
+    color:#6b7280;
+    line-height:1.6;
+}
+
+.social{
+    margin-top:22px;
+}
+
+.social a{
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    background:#111;
+    margin:0 6px;
+    color:#fff;
+    font-size:18px;
+    transition:0.3s ease;
+}
+
+.social a:hover{
+    background:#fff;
+    color:#000;
+    transform:translateY(-3px);
+}
+
+section{
+    padding:65px 8%;
+}
+
+.title{
+    font-size:28px;
+    margin-bottom:22px;
+    font-weight:500;
+}
+
+.card{
+    background:#0d0d0d;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+    border:1px solid #111;
+    transition:0.35s ease;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:#1f1f1f;
+}
+
+.hidden{
+    opacity:0;
+    transform:translateY(40px);
+    transition:0.8s ease;
+}
+
+.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+footer{
+    text-align:center;
+    padding:25px;
+    color:#555;
+}
+
+@media(max-width:768px){
+
+    .hero{
+        padding:90px 15px 70px;
+    }
+
+    .profile{
+        width:160px;
+    }
+
+    .hero h1{
+        font-size:28px;
+    }
+
+    .title{
+        font-size:24px;
+    }
+
+    section{
+        padding:50px 6%;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="hero">
+    <div class="profile">
+        <img src="/assets/shazim.png" alt="Shazim">
+    </div>
+
+    <h1 class="hidden">Shazim</h1>
+    <h3 class="hidden">Co-Founder & Developer of Mecknown</h3>
+    <p class="hidden">Robotics • Embedded Systems • AI • IoT Builder</p>
+
+    <div class="social hidden">
+        <a href="https://github.com/shazim-otp" target="_blank"><i class="fab fa-github"></i></a>
+        <a href="https://instagram.com/shazm._2" target="_blank"><i class="fab fa-instagram"></i></a>
+    </div>
+
+    <p class="hidden" style="margin-top:28px; max-width:520px; margin-left:auto; margin-right:auto;">
+        I create intelligent machines, smart systems, and real-world tech solutions.
+        From embedded hardware to AI — I turn concepts into powerful working products.
+    </p>
+</div>
+
+<section>
+    <h2 class="title hidden">Projects</h2>
+
+    <div class="card hidden">AI Voice Assistant</div>
+    <div class="card hidden">Smart Kitchen Safety System</div>
+    <div class="card hidden">Home Automation System</div>
+    <div class="card hidden">Ai Student Management </div>
+    <div class="card hidden">IoT Home Server</div>
+    <div class="card hidden">Life Guard Boat</div>
+    <div class="card hidden">AFK Bot</div>
+</section>
+
+<section>
+    <h2 class="title hidden">Skills</h2>
+
+    <div class="card hidden">Arduino, Raspberry Pi, Sensors, Circuit Design</div>
+    <div class="card hidden">Linux, App Development, Firebase, Automation</div>
+    <div class="card hidden">IoT Systems, Gadget Building, Ethical Hacking (Basics)</div>
+</section>
+
+<section>
+    <h2 class="title hidden">Experience</h2>
+
+    <div class="card hidden">5+ Years Hands-on Experience</div>
+    <div class="card hidden">Teaching & Mentoring in Robotics</div>
+    <div class="card hidden">State-level Technology Competitor</div>
+</section>
+
+<footer>
+    © 2026 shazim|Mecknown
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting){
+            entry.target.classList.add('show');
+        }
+    });
+});
+
+document.querySelectorAll('.hidden').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

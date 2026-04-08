@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mecknown Shop | Robotics & Electronics Store</title>
+
+<meta name="description" content="Buy robotics components, Arduino, and electronics from Mecknown. Build your future with powerful tools.">
+
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.ico">
+
+<style>
+  
+
+/* ===== HERO (UNCHANGED ANIMATION) ===== */
+.hero{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:90vh;text-align:center;gap:20px;
+}
+
+.hero-row{
+  display:flex;gap:20px;justify-content:center;flex-wrap:wrap;
+}
+
+.hero-img{
+  width:220px;max-width:30vw;
+  transform:translateY(-120px);
+  opacity:0;
+}
+
+.hero-img.show{
+  opacity:1;
+  animation:dropBounce 1s ease forwards, glow 2s infinite alternate;
+}
+
+@keyframes dropBounce{
+  0%{opacity:0;transform:translateY(-120px)}
+  60%{opacity:1;transform:translateY(10px)}
+  100%{transform:translateY(0)}
+}
+
+@keyframes glow{
+  from{filter:drop-shadow(0 0 5px #22c55e)}
+  to{filter:drop-shadow(0 0 20px #22c55e)}
+}
+
+/* ===== PRODUCTS ===== */
+.products{
+  padding:60px 6%;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:25px;
+}
+
+/* PREMIUM CARD */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:15px;
+  transition:0.35s ease;
+  position:relative;
+  overflow:hidden;
+}
+
+.card:hover{
+  transform:translateY(-10px) scale(1.02);
+  border-color:#2a2a2a;
+  box-shadow:0 20px 40px rgba(0,0,0,0.6);
+}
+
+.card img{
+  width:100%;
+  border-radius:12px;
+  transition:0.4s;
+}
+
+.card:hover img{
+  transform:scale(1.08);
+}
+
+.price{
+  margin-top:8px;
+  font-weight:600;
+  color:#22c55e;
+}
+
+/* BUTTON */
+.card button{
+  margin-top:10px;
+  width:100%;
+  background:#fff;
+  color:#000;
+  border-radius:10px;
+}
+
+/* ===== CART ICON ===== */
+.cart-icon{
+  position:fixed;
+  top:18px;
+  right:20px;
+  z-index:5000;
+  cursor:pointer;
+}
+
+.cart-count{
+  position:absolute;
+  top:-6px;
+  right:-8px;
+  background:#22c55e;
+  color:#000;
+  font-size:11px;
+  padding:2px 6px;
+  border-radius:50%;
+}
+
+/* ===== CART PANEL ===== */
+.cart-panel{
+  position:fixed;
+  top:0;
+  right:-350px;
+  width:320px;
+  height:100%;
+  background:#0f0f0f;
+  border-left:1px solid #1f1f1f;
+  padding:20px;
+  transition:0.4s;
+  z-index:6000;
+}
+
+.cart-panel.active{right:0}
+
+/* CART ITEM */
+.cart-item{
+  margin-bottom:15px;
+}
+
+.qty{
+  display:flex;
+  gap:8px;
+  margin-top:5px;
+}
+
+.qty button{
+  padding:4px 10px;
+}
+
+/* ===== OVERLAY ===== */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  z-index:5500;
+}
+.overlay.active{display:block}
+
+/* ===== CHECKOUT POPUP ===== */
+.address-popup{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.7);
+  z-index:7000;
+}
+
+.address-box{
+  background:var(--card);
+  padding:25px;
+  border-radius:16px;
+  width:320px;
+}
+
+/* ===== SUCCESS ===== */
+.success{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.8);
+  z-index:8000;
+}
+
+.success-box{
+  background:var(--card);
+  padding:30px;
+  border-radius:16px;
+  text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav>
+  <h1>Mecknown</h1>
+
+  <!-- HAMBURGER -->
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span><span></span><span></span>
+  </div>
+
+  <ul id="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="ai.html">Meck AI</a></li>
+    <li><a href="course.html">Course</a></li>
+    <li><a href="shop.html" class="active">Shop</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="cart-icon" onclick="toggleCart()">
+🛒 <span class="cart-count" id="cartCount">0</span>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-row">
+    <img src="assets/arduinoq.png" class="hero-img" id="arduinoHero">
+    <img src="assets/esp32.png" class="hero-img" id="espHero">
+    <img src="assets/stm32.png" class="hero-img" id="stmHero">
+  </div>
+
+  <h1 id="heroText">Mecknown Robotics Store</h1>
+  <p id="heroSub">Build • Learn • Innovate</p>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products" id="products"></section>
+
+<!-- CART -->
+<div class="cart-panel" id="cartPanel">
+  <h3>Your Cart</h3>
+  <div id="cartItems"></div>
+  <div id="total"></div>
+  <button onclick="openAddressPopup()">Checkout</button>
+</div>
+
+<!-- POPUP -->
+<div class="address-popup" id="addressPopup">
+  <div class="address-box">
+    <h3>Checkout</h3>
+    <input id="nameInput" placeholder="Name">
+    <input id="phoneInput" placeholder="Phone">
+    <input id="addressInput" placeholder="Address">
+    <button onclick="submitOrder()">Confirm</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success" id="successBox">
+  <div class="success-box">
+    <h2>Order Placed ✅</h2>
+  </div>
+</div>
+
+<script>
+
+let cart=JSON.parse(localStorage.getItem('cart'))||[];
+
+function formatPrice(n){return "₹"+n}
+
+/* HERO */
+window.onload=()=>{
+  setTimeout(()=>arduinoHero.classList.add("show"),200);
+  setTimeout(()=>espHero.classList.add("show"),500);
+  setTimeout(()=>stmHero.classList.add("show"),800);
+};
+
+/* CART */
+function toggleCart(){
+  cartPanel.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+overlay.onclick=()=>toggleCart();
+
+function updateCart(){
+  cartItems.innerHTML="";
+  let total=0;
+
+  cart.forEach((i,index)=>{
+    total+=i.price*i.qty;
+
+    cartItems.innerHTML+=`
+      <div class="cart-item">
+        ${i.name}
+        <div class="qty">
+          <button onclick="changeQty(${index},-1)">-</button>
+          ${i.qty}
+          <button onclick="changeQty(${index},1)">+</button>
+        </div>
+      </div>`;
+  });
+
+  totalDiv.textContent="Total: "+formatPrice(total);
+  cartCount.textContent=cart.length;
+}
+
+function addToCart(name,price){
+  const ex=cart.find(i=>i.name===name);
+  if(ex) ex.qty++;
+  else cart.push({name,price,qty:1});
+
+  localStorage.setItem('cart',JSON.stringify(cart));
+  updateCart();
+}
+
+function changeQty(i,v){
+  cart[i].qty+=v;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  localStorage.setItem('cart',JSON.stringify(cart));
+  updateCart();
+}
+
+/* PRODUCTS */
+fetch('data/products.json')
+.then(r=>r.json())
+.then(data=>{
+  data.forEach(p=>{
+    products.innerHTML+=`
+      <div class="card">
+        <img src="${p.img}">
+        <h3>${p.name}</h3>
+        <div class="price">₹${p.price}</div>
+        <button onclick="addToCart('${p.name}',${p.price})">Add to Cart</button>
+      </div>`;
+  });
+});
+
+/* CHECKOUT */
+function openAddressPopup(){
+  addressPopup.style.display="flex";
+}
+
+function submitOrder(){
+  let msg="Order:%0A";
+  cart.forEach(i=>msg+=`${i.name} x${i.qty}%0A`);
+  window.open(`https://wa.me/919048585461?text=${msg}`);
+
+  successBox.style.display="flex";
+  setTimeout(()=>successBox.style.display="none",2000);
+}
+
+updateCart();
+/* ===== MENU FIX ===== */
+const toggle = document.getElementById("menu-toggle");
+const navLinks = document.getElementById("nav-links");
+
+if(toggle){
+  toggle.addEventListener("click", function(){
+    navLinks.classList.toggle("active");
+    toggle.classList.toggle("active");
+  });
+}
+
+</script>
+
+</body>
+</html>
